@@ -1,0 +1,90 @@
+<html>
+<body>
+
+<script type="text/javascript">
+//js封装数据的几种方式
+/**
+//一、 生成实例对象的原始模式
+　　var Cat = {
+　　　　name : '',
+　　　　color : ''
+　　} ;
+　　var cat1 = {}; // 创建一个空对象
+　　　　cat1.name = "大毛"; // 按照原型对象的属性赋值
+　　　　cat1.color = "黄色";
+　　var cat2 = {};
+　　　　cat2.name = "二毛";
+　　　　cat2.color = "黑色";
+alert(cat1.name); // 大毛
+alert(cat1.color); // 黄色
+document.write("Hello World!")
+//好了，这就是最简单的封装了，把两个属性封装在一个对象里面。但是，这样的写法有两个缺点，一是如果多生成几个实例，写起来就非常麻烦；二是实例与原型之间，没有任何办法，可以看出有什么联系。
+**/
+/**
+//二、 原始模式的改进
+　　function Cat(name,color) {
+　　　　return {
+　　　　　　name:name,
+　　　　　　color:color
+　　　　}
+　　}
+　　var cat1 = Cat("大毛","黄色");
+　　var cat2 = Cat("二毛","黑色");
+document.write("Hello World! "+cat1.name+" "+cat1.color)
+//这种方法的问题依然是，cat1和cat2之间没有内在的联系，不能反映出它们是同一个原型对象的实例。
+**/
+/**
+//三、 构造函数模式
+　　function Cat(name,color){
+　　　　this.name=name;
+　　　　this.color=color;
+　　}
+　　var cat1 = new Cat("大毛","黄色");
+　　var cat2 = new Cat("二毛","黑色");
+　　alert(cat1.name); // 大毛
+　　alert(cat1.color); // 黄色
+　　alert(cat1.constructor == Cat); //true
+　　alert(cat2.constructor == Cat); //true
+　　alert(cat1 instanceof Cat); //true
+　　alert(cat2 instanceof Cat); //true
+**/
+/**
+//四、构造函数模式的问题
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　　　this.type = "猫科动物";
+　　　　this.eat = function(){alert("吃老鼠");};
+　　}
+　　var cat1 = new Cat("大毛","黄色");
+　　var cat2 = new Cat ("二毛","黑色");
+　　alert(cat1.type); // 猫科动物
+　　cat1.eat(); // 吃老鼠
+alert(cat1.eat == cat2.eat); //false
+//表面上好像没什么问题，但是实际上这样做，有一个很大的弊端。那就是对于每一个实例对象，type属性和eat()方法都是一模一样的内容，每一次生成一个实例，都必须为重复的内容，多占用一些内存。这样既不环保，也缺乏效率。
+**/
+
+//五、 Prototype模式
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　Cat.prototype.type = "猫科动物";
+　　Cat.prototype.eat = function(){alert("吃老鼠")};
+　　var cat1 = new Cat("大毛","黄色");
+　　var cat2 = new Cat("二毛","黑色");
+　　alert(cat1.type); // 猫科动物
+　　cat1.eat(); // 吃老鼠
+　alert(cat1.eat == cat2.eat); //true
+//六、 Prototype模式的验证方法
+　　alert(Cat.prototype.isPrototypeOf(cat1)); //true
+　　alert(Cat.prototype.isPrototypeOf(cat2)); //true
+　　alert(cat1.hasOwnProperty("name")); // true
+　　alert(cat1.hasOwnProperty("type")); // false
+　　alert("name" in cat1); // true
+　　alert("type" in cat1); // true
+for(var prop in cat1) { alert("cat1["+prop+"]="+cat1[prop]); }
+</script>
+
+</body>
+</html>

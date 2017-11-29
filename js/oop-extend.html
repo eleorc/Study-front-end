@@ -1,0 +1,187 @@
+<html>
+<body>
+
+<script type="text/javascript">
+/**怎样才能使"猫"继承"动物"呢？
+　　function Animal(){
+　　　　this.species = "动物";
+　　}
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+**/
+/**
+//一、 构造函数绑定
+　　function Animal(){
+　　　　this.species = "动物";
+　　}
+　　function Cat(name,color){
+　　　　Animal.apply(this, arguments);
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+//限制：需要能够修改子构造函数的源代码
+**/
+/**
+//二、 prototype模式
+　　function Animal(){
+　　　　this.species = "动物";
+　　}
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　Cat.prototype = new Animal();
+　　Cat.prototype.constructor = Cat;
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+　　alert(Cat.prototype.isPrototypeOf(cat1));//?
+　　alert(Animal.prototype.isPrototypeOf(cat1)); //?
+**/
+/**
+//三、 直接继承prototype
+　　function Animal(){ }
+　　Animal.prototype.species = "动物";
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　Cat.prototype = Animal.prototype;
+　　Cat.prototype.constructor = Cat;
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+
+//缺陷：Animal.prototype对象的constructor属性也改掉了！并且这种方式要求“父类”只能用prototype定义所有属性。
+**/
+/**
+//四、 利用空对象作为中介
+　　function Animal(){ }
+　　Animal.prototype.species = "动物";
+　//　function Animal(){
+　//　　　this.species = "动物";
+　//　}
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　var F = function(){};
+　　F.prototype = Animal.prototype;
+　　Cat.prototype = new F();
+　　Cat.prototype.constructor = Cat;
+
+    alert(Animal.prototype.constructor); // Animal
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+//我们将上面的方法，封装成一个函数，便于使用。
+　　function extend(Child, Parent) {
+
+　　　　var F = function(){};
+　　　　F.prototype = Parent.prototype;
+　　　　Child.prototype = new F();
+　　　　Child.prototype.constructor = Child;
+　　　　Child.uber = Parent.prototype;
+　　}
+　　extend(Cat,Animal);
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+**/
+/**
+//五、 拷贝继承
+　　function Animal(){}
+　　Animal.prototype.species = "动物";
+　　function Cat(name,color){
+　　　　this.name = name;
+　　　　this.color = color;
+　　}
+　　function extend2(Child, Parent) {
+　　　　var p = Parent.prototype;
+　　　　var c = Child.prototype;
+　　　　for (var i in p) {
+　　　　　　c[i] = p[i];
+　　　　　　}
+　　　　c.uber = p;
+　　}
+　　extend2(Cat, Animal);
+　　var cat1 = new Cat("大毛","黄色");
+　　alert(cat1.species); // 动物
+**/
+
+/**
+//非构造函数的继承
+//object()方法
+　　var Chinese = {
+　　　　nation:'中国'
+　　};
+　　var Doctor ={
+　　　　career:'医生'
+　　}
+    //巧妙的利用js的prototype执行原理，创建一个包含入参对象的所有属性的新对象。关键是创建了新对象，不影响入参对象。
+　　function object(o) {
+　　　　function F() {}
+　　　　F.prototype = o;
+　　　　return new F();
+　　}
+　　var Doctor = object(Chinese);
+　　Doctor.career = '医生';
+　  alert(Doctor.nation); //中国
+**/
+/**
+//三、浅拷贝
+　　var Chinese = {
+　　　　nation:'中国'
+　　};
+　　var Doctor ={
+　　　　career:'医生'
+　　}
+function extendCopy(p) {
+　　　　var c = {};
+　　　　for (var i in p) { 
+　　　　　　c[i] = p[i];
+　　　　}
+　　　　c.uber = p;
+　　　　return c;
+　　}
+　　var Doctor = extendCopy(Chinese);
+　　Doctor.career = '医生';
+　　alert(Doctor.nation); // 中国
+//浅拷贝问题
+Chinese.birthPlaces = ['北京','上海','香港'];
+var Doctor = extendCopy(Chinese);
+　　Doctor.birthPlaces.push('厦门');
+　　alert(Doctor.birthPlaces); //北京, 上海, 香港, 厦门
+　　alert(Chinese.birthPlaces); //北京, 上海, 香港, 厦门
+**/
+
+//四、深拷贝
+　　var Chinese = {
+　　　　nation:'中国'
+　　};
+　　var Doctor ={
+　　　　career:'医生'
+　　}
+　　function deepCopy(p, c) {
+　　　　var c = c || {};
+　　　　for (var i in p) {
+　　　　　　if (typeof p[i] === 'object') {
+　　　　　　　　c[i] = (p[i].constructor === Array) ? [] : {};
+　　　　　　　　deepCopy(p[i], c[i]);
+　　　　　　} else {
+　　　　　　　　　c[i] = p[i];
+　　　　　　}
+　　　　}
+　　　　return c;
+　　}
+
+　　Chinese.birthPlaces = ['北京','上海','香港'];
+　　var Doctor = deepCopy(Chinese);
+　　Doctor.birthPlaces.push('厦门');
+　　alert(Doctor.birthPlaces); //北京, 上海, 香港, 厦门
+　　alert(Chinese.birthPlaces); //北京, 上海, 香港
+
+</script>
+
+</body>
+</html>
